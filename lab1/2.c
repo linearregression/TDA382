@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 /* 2 - a command to connect two programs by a bidirectional pipe */
 /* Author: Thomas Hallgren, hallgren@cs.chalmers.se */

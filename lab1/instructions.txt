@@ -1,0 +1,2 @@
+Run:
+./2 "tsim Lab1.map" "java Lab1 10 5"

@@ -1,3 +1,8 @@
+# tsim module #
+tsim-0.84/
+TSim/
+
+# Binary Files #
 *.class
 
 # Package Files #

@@ -148,8 +148,87 @@ case 1:
 //	
 	
 	
+/********************************************************************/
+
+//Pseudo code for the sensors on the top side of the track
+
+/********************************************************************/
+	
+/*
+
+10) 
+	DOWN 
+		ACTIVE => nothing 
+		INACTIVE => formerTrack.release()			
+	UP 
+		ACTIVE 
+			t8 IS_AVAILABLE  => t8.acquire()
+			t8 NOT_AVAILABLE => t7.acquire()
+		INACTIVE => nothing	
+
+		
+11)
+	DOWN 
+		ACTIVE 
+			crit6 IS_AVAILABLE => crit6.acquire()
+			crit6 NOT_AVAILABLE => stopTrain && crit6.acquire()
+		INACTIVE => nothing
+	UP
+		ACTIVE => nothing
+		INACTIVE => crit6.release()
+		
+12)
+	DOWN 
+		ACTIVE 
+			crit6 IS_AVAILABLE => crit6.acquire()
+			crit6 NOT_AVAILABLE => stopTrain && crit6.acquire()
+		INACTIVE => nothing
+	UP
+		ACTIVE => nothing
+		INACTIVE => crit6.release()
 	
 	
+13)
+	DOWN 
+		ACTIVE => nothing
+		INACTIVE => crit9.release()
+	UP
+		ACTIVE 
+			crit9 IS_AVAILABLE => crit9.acquire()
+			crit9 NOT_AVAILABLE => stopTrain && crit9.acquire()
+		INACTIVE => nothing
+
+14)		
+	DOWN 
+		ACTIVE => nothing
+		INACTIVE => crit9.release()
+	UP
+		ACTIVE 
+			crit9 IS_AVAILABLE => crit9.acquire()
+			crit9 NOT_AVAILABLE => stopTrain && crit9.acquire()
+		INACTIVE => nothing
+		
+15) 
+	DOWN 
+		ACTIVE 
+			crit9 IS_AVAILABLE => crit9.acquire()
+			crit9 NOT_AVAILABLE => stopTrain && crit9.acquire()
+		INACTIVE => nothing
+	UP	
+		ACTIVE => nothing
+		INACTIVE => crit9.release()
+		
+16) 
+	DOWN 
+		ACTIVE 
+			crit9 IS_AVAILABLE => crit9.acquire()
+			crit9 NOT_AVAILABLE => stopTrain && crit9.acquire()
+		INACTIVE => nothing
+	UP	
+		ACTIVE => nothing
+		INACTIVE => crit9.release()		
+		
+*/	
 	
 	
 	

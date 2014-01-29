@@ -47,6 +47,28 @@ case 1:
 		// INACTIVE	=> nothing
 //
 
+    public void tryAcquire(Semaphore trackToAcquire) {
+        if (!crit3.tryAcquire()) { // if the track is occupied
+			tsim.setSpeed(TRAIN_ID, 0);		// stop the train
+			crit3.acquire();				// wait for the track to be free 
+			tsim.setSpeed(TRAIN_ID, maxspeed); // and then accelerate to maxspeed
+		} //else just keep going
+    }
+
+    int direction = getDirection(event);
+	if (direction == Direction.DOWN) { //going downwards
+		if (event.getStatus() == SensorEvent.INACTIVE) { //we have left the crossing point/previous track completely
+			crit3.release(); 							//release previous track
+		}
+	} else { //going upwards
+		if (event.getStatus() == SensorEvent.ACTIVE) { //we just came to the sensor
+			tryAcquire(crit3);
+			
+		} else { //sensor is inactive, we are leaving it
+			//nothing happens
+		}
+	}
+
 //2)
 	// DOWN
 		// ACTIVE 	=> nothing

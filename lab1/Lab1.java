@@ -50,9 +50,12 @@ public class Lab1 {
 	}
 
 	public Lab1(String[] args) {
-		simulation_speed_parameter = Integer.parseInt(args[2]);
-		Train train1 = new Train(1, Integer.parseInt(args[0]), Direction.SOUTH);
-		Train train2 = new Train(2, Integer.parseInt(args[1]), Direction.NORTH);
+		int train1Speed = args.length>0 ? Integer.parseInt(args[0]) : 17; 
+		int train2Speed = args.length>1 ? Integer.parseInt(args[1]) : 17; 
+		simulation_speed_parameter = args.length>3 ? Integer.parseInt(args[2]) : 100;
+	
+		Train train1 = new Train(1, train1Speed, Direction.SOUTH);
+		Train train2 = new Train(2, train2Speed, Direction.NORTH);		
 
 		Thread t1 = new Thread(train1);
 		Thread t2 = new Thread(train2);

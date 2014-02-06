@@ -159,14 +159,6 @@ public class Lab2 {
 			}
 		}
 		
-		public void acquireTrack(Semaphore trackToAcquire) throws  InterruptedException, CommandException {
-			if (!trackToAcquire.tryAcquire()) { // if the track is occupied
-				tsim.setSpeed(TRAIN_ID, 0); // stop the train
-				trackToAcquire.acquire(); // wait for the track to be free
-				tsim.setSpeed(TRAIN_ID, maxspeed); // and then accelerate to maxspeed
-			} // else just keep going
-		}
-		
 		public void chooseTrack(Monitor shortTrack, Monitor longTrack, Switch trainSwitch) throws InterruptedException, CommandException {
 			boolean gotShortTrack = shortTrack.tryEnter();
 			boolean leftIsShortestTrack = trainSwitch.equals(sw1) || trainSwitch.equals(sw2);

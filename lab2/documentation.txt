@@ -1,0 +1,20 @@
+Group 61
+Florian Minges & Jakob Svensson
+
+What is the purpose of each method in the monitor?
+
+enter(Train train)
+
+This method is called when a train wants to enter a track. If the track is occupied the train stops and waits for it to be free using the await method and when the track is no longer occupied the train will continue moving on to the track. It also marks the track as occupied.  
+
+leave()
+
+This method is called when a train leaves a track. It marks the track as no longer occupied and It signals to the train waiting on the conditional variable.
+
+tryEnter()
+
+This method is called when a train wants to go on the shortest track in an intersection. If the track is free the train will claim it, otherwise nothing will happen and false will be returned.  
+
+How many conditional variables if any are needed in your solution?
+
+We have nine conditional variables in our solution but theoretically we would only need three. Conditional variables are only needed when a train needs to wait for a track to be free. On this map there are only three such critical sections. However we would have needed two monitor classes if we only would have wanted three conditional variables. Therefore for simplicity we chose to have nine conditional variables. 

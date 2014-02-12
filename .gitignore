@@ -9,3 +9,11 @@ TSim/
 *.jar
 *.war
 *.ear
+
+# Erlang #
+.eunit
+deps
+*.o
+*.beam
+*.plt
+erl_crash.dump

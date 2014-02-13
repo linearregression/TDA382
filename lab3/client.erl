@@ -7,13 +7,17 @@
 %%%% Connect
 %%%%%%%%%%%%%%%
 loop(St, {connect, _Server}) ->
-    {ok, St} ;
+    R = request(list_to_atom(_Server), {connect, self()}),
+    NewState = St#cl_st{connected_server=_Server},
+    {R, NewState} ;
 
 %%%%%%%%%%%%%%%
 %%%% Disconnect
 %%%%%%%%%%%%%%%
 loop(St, disconnect) ->
-     {ok, St} ;
+    R = request(list_to_atom(St#cl_st.connected_server), {disconnect, self()}),
+    NewState = St#cl_st{connected_server=-1},
+    {R, NewState} ;
 
 %%%%%%%%%%%%%%
 %%% Join
@@ -38,13 +42,16 @@ loop(St, {msg_from_GUI, _Channel, _Msg}) ->
 %%% WhoIam
 %%%%%%%%%%%%%%
 loop(St, whoiam) ->
-    {"user01", St} ;
+    {St#cl_st.nick, St} ;
 
 %%%%%%%%%%
 %%% Nick
 %%%%%%%%%%
 loop(St,{nick,_Nick}) ->
-    {ok, St} ;
+    %unregister(list_to_atom(St#cl_st.nick)), % unregister last nick
+    NewState = St#cl_st{nick = _Nick}, % save nick to new state
+    %register(list_to_atom(_Nick), self()),  % register the new nick
+    {ok, NewState} ; 
 
 %%%%%%%%%%%%%
 %%% Debug
@@ -68,5 +75,8 @@ decompose_msg(_MsgFromClient) ->
     {"", "", ""}.
 
 
+request(_Server, Msg) ->
+    genserver:request(_Server, Msg).
+
 initial_state(Nick, GUIName) ->
-    #cl_st { gui = GUIName }.
+    #cl_st { nick = Nick, gui = GUIName }.

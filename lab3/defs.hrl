@@ -7,11 +7,16 @@
 % connected_server: the name (or PID) of the server the 
 % client is connected to
 %
--record(cl_st, {nick, gui, connected_server, connected_chatrooms}).
+-record(cl_st, {nick, gui, connected_server, connected_channels}).
     
 % This record defines the structure of the 
 % server process. 
 % 
--record(server_st, {clients, chatrooms}).
+-record(server_st, {clients, channels}).
+
+% This record defines the structure of the 
+% channel process. 
+% 
+-record(channel_st, {clients}).
 
 % TODO Use shorter names for the different stuff in here

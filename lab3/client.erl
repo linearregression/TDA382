@@ -14,14 +14,16 @@ loop(St, {connect, _Server}) ->
 %%%%%%%%%%%%%%%
 %%%% Disconnect
 %%%%%%%%%%%%%%%
+
+
 loop(St, disconnect) ->
     % TODO Only allow the user to disconnect if he has left all chat rooms
     % if that is not the case, what should we return? exit? error?
     if
         St#cl_st.connected_server /= "-1" -> % tries to disconnect from a server that he is not connected to
             {{error, user_not_connected, "Dummy text"}, St};
-        len(St#cl_st.connected_chatrooms) /= 0 -> % has not left all chatrooms
-            {{error, leave_channels_first, "Dummy text 2"}, St};
+      %  len(St#cl_st.connected_channels) /= 0 -> % has not left all chatrooms
+       %     {{error, leave_channels_first, "Dummy text 2"}, St};
         true -> 
             case catch(request(list_to_atom(St#cl_st.connected_server), {disconnect, self()})) of
                 {'EXIT', Reason} -> % if the server process cannot be reached
@@ -37,7 +39,10 @@ loop(St, disconnect) ->
 %%% Join
 %%%%%%%%%%%%%%
 loop(St,{join,_Channel}) ->
-    {ok, St} ;
+	R = request(list_to_atom(St#cl_st.connected_server), {join, _Channel, self()}),
+	NewChannels = St#cl_st.connected_channels ++ [_Channel],
+    NewState = St#cl_st{connected_channels=NewChannels},
+    {ok, NewState} ;
 
 %%%%%%%%%%%%%%%
 %%%% Leave
@@ -93,4 +98,4 @@ request(_Server, Msg) ->
     genserver:request(_Server, Msg).
 
 initial_state(Nick, GUIName) ->
-    #cl_st { nick = Nick, gui = GUIName }.
+    #cl_st { nick = Nick, gui = GUIName, connected_channels = [] }.

@@ -6,6 +6,9 @@ cchat:  cchat.erl server.beam gui.beam
 server: server.erl defs.hrl genserver
 	erl -compile server.erl
 
+channel: channel.erl defs.hrl genserver
+	erl -compile channel.erl
+
 client: client.erl defs.hrl lexgrm genserver
 	erl -compile client.erl
 

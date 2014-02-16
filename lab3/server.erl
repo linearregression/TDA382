@@ -14,10 +14,22 @@ loop(St, {disconnect, Pid}) ->
     io:fwrite("disconnected: ~w ", [NewClients]),
     NewState = St#server_st{clients=NewClients},
     % TODO remove connection from chatrooms, if any left
-    {ok, NewState}.
+    {ok, NewState};
 
+
+loop(St, {join, _Channel, Pid}) ->
+	NewChannels = St#server_st.channels ++ [_Channel],
+	NewState = St#server_st{channels=NewChannels},
+	newChannel(_Channel),
+	genserver:request(list_to_atom(_Channel), {connect, Pid}),
+	{ok, NewState}.
+
+newChannel(_Channel) ->
+    %catch(unregister(list_to_atom(_Channel))),
+    genserver:start(list_to_atom(_Channel), channel:initial_state(_Channel), 
+                    fun channel:loop/2).
 
 initial_state(_Server) ->
-    #server_st{clients=[], chatrooms=[]}.
+    #server_st{clients=[], channels=[]}.
     
 

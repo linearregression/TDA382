@@ -7,9 +7,24 @@
 %%%% Connect
 %%%%%%%%%%%%%%%
 loop(St, {connect, _Server}) ->
-    R = request(list_to_atom(_Server), {connect, self()}),
-    NewState = St#cl_st{connected_server=_Server},
-    {ok, NewState} ;
+    if
+        St#cl_st.connected_server == _Server -> % tries to disconnect from a server that he is not connected to
+            {{error, user_already_connected, "Already connected, duh"}, St};
+        true -> 
+            case catch(request(list_to_atom(_Server), {connect, self()})) of
+                {'EXIT', Reason} -> % if the server process cannot be reached
+                    {{error, server_not_reached, Reason}, St};
+                Result -> 
+                    NewState = St#cl_st{connected_server=_Server}, 
+                    {ok, NewState}
+            end
+    end;
+
+%    Variable Atom gets the follows values. Atom 
+%    user_already_connected is used when the user tried to 
+%    connect but it is already connected to the server. 
+%    Atom server_not_reached is returned when the server process 
+%    cannot be reached for any reason.
 
 %%%%%%%%%%%%%%%
 %%%% Disconnect
@@ -27,7 +42,7 @@ loop(St, disconnect) ->
         true -> 
             case catch(request(list_to_atom(St#cl_st.connected_server), {disconnect, self()})) of
                 {'EXIT', Reason} -> % if the server process cannot be reached
-                    {{error, server_not_reached, "Dummy text 3"}, St};
+                    {{error, server_not_reached, Reason}, St};
                 Result -> 
                     NewState = St#cl_st{connected_server=-1}, % TODO what to put here?
                     {ok, NewState}
@@ -84,9 +99,9 @@ loop(St, whoiam) ->
 %%% Nick
 %%%%%%%%%%
 loop(St,{nick,_Nick}) ->
-    %unregister(list_to_atom(St#cl_st.nick)), % unregister last nick
+    unregister(list_to_atom(St#cl_st.nick)), % unregister last nick
     NewState = St#cl_st{nick = _Nick}, % save nick to new state
-    %register(list_to_atom(_Nick), self()),  % register the new nick
+    register(list_to_atom(_Nick), self()),  % register the new nick
     {ok, NewState} ; 
 
 %%%%%%%%%%%%%
@@ -99,6 +114,7 @@ loop(St, debug) ->
 %%%% Incoming message
 %%%%%%%%%%%%%%%%%%%%%
 loop(St = #cl_st { gui = GUIName }, _MsgFromClient) ->
+
     {Channel, Name, Msg} = decompose_msg(_MsgFromClient),
 	io:fwrite("Message arrived: ~w ", [_MsgFromClient]),
     gen_server:call(list_to_atom(GUIName), {msg_to_GUI, Channel, Name++"> "++Msg}),
@@ -109,6 +125,7 @@ loop(St = #cl_st { gui = GUIName }, _MsgFromClient) ->
 % decomposed in the parts needed to tell the GUI to display
 % it in the right chat room.
 decompose_msg(_MsgFromClient) ->
+    
     {"", "", ""}.
 
 
@@ -116,4 +133,5 @@ request(_Server, Msg) ->
     genserver:request(_Server, Msg).
 
 initial_state(Nick, GUIName) ->
+    register(list_to_atom(Nick), self()),
     #cl_st { nick = Nick, gui = GUIName, connected_channels = [] }.

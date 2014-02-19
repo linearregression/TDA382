@@ -16,7 +16,7 @@ init(Name) ->
     putStrLn(blue("\n# Test: "++Name)),
     catch(unregister(?SERVERATOM)),
     InitState = server:initial_state(?SERVER),
-    Result = genserver:start(?SERVERATOM, InitState, fun server:server_loop/2),
+    Result = genserver:start(?SERVERATOM, InitState, fun server:loop/2),
     assert("server startup", is_pid(Result)).
 
 % Start new GUI and register it as Name
@@ -172,6 +172,8 @@ putStrLn(S) ->
 putStrLn(S1, S2) ->
     putStrLn(io_lib:format(S1++"~n", S2)).
 
+% To turn off colours, just use this function:
+% colour(Num,S) -> S.
 colour(Num,S) ->
     "\033["++Num++"m"++S++"\033[0m".
 red(S) ->

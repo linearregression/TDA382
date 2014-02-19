@@ -14,8 +14,17 @@ loop(St, {disconnect, Pid}) ->
     io:fwrite("disconnected to channel: ~w ", [NewClients]),
     NewState = St#channel_st{clients=NewClients},
     % TODO remove connection from chatrooms, if any left
-    {ok, NewState}.
+    {ok, NewState};
 
+loop(St, {msg_from_client, Pid, _Msg}) ->
+	lists:foreach(fun(Client) ->
+		send_msg_to_client(Client, _Msg) end,
+		lists:delete(Pid, St#channel_st.clients));
+	{ok, St}.
+
+send_msg_to_client(Pid, _Msg) ->
+	io:fwrite("Message sent: ~w ", [_Msg]),
+	request(Pid, {_Msg}).
 
 initial_state(_Channel) ->
     #channel_st{clients=[]}.

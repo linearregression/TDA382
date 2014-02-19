@@ -69,7 +69,8 @@ loop(St, {msg_from_GUI, _Channel, _Msg}) ->
 			{{error, user_not_joined, "Tried to write to channel not part of."}, St};
         true -> 
             % write message
-            list_to_atom(_Channel) ! {message, _Msg},
+			io:fwrite("Message from client: ~w ", [_Msg]),
+			request(list_to_atom(_Channel), {msg_from_client, self(), _Msg}),
 			{ok, St}
     end;
 
@@ -99,6 +100,7 @@ loop(St, debug) ->
 %%%%%%%%%%%%%%%%%%%%%
 loop(St = #cl_st { gui = GUIName }, _MsgFromClient) ->
     {Channel, Name, Msg} = decompose_msg(_MsgFromClient),
+	io:fwrite("Message arrived: ~w ", [_MsgFromClient]),
     gen_server:call(list_to_atom(GUIName), {msg_to_GUI, Channel, Name++"> "++Msg}),
     {ok, St}.
 

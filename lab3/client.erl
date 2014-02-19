@@ -61,8 +61,15 @@ loop(St, {leave, _Channel}) ->
 %%% Sending messages
 %%%%%%%%%%%%%%%%%%%%%
 loop(St, {msg_from_GUI, _Channel, _Msg}) ->
-     {ok, St} ;
-
+    IsConnectedToChannel = lists:keyfind(_Channel, 1, St#cl_st.connected_channels),
+    if
+		IsConnectedToChannel == false ->
+			{{error, user_not_joined, "Tried to write to channel not part of."}, St};
+        true -> 
+            % write message
+            list_to_atom(_Channel) ! {message, _Msg},
+			{ok, St}
+    end;
 
 %%%%%%%%%%%%%%
 %%% WhoIam

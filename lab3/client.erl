@@ -99,9 +99,9 @@ loop(St, whoiam) ->
 %%% Nick
 %%%%%%%%%%
 loop(St,{nick,_Nick}) ->
-    unregister(list_to_atom(St#cl_st.nick)), % unregister last nick
+    %unregister(list_to_atom(St#cl_st.nick)), % unregister last nick
     NewState = St#cl_st{nick = _Nick}, % save nick to new state
-    register(list_to_atom(_Nick), self()),  % register the new nick
+    %register(list_to_atom(_Nick), self()),  % register the new nick
     {ok, NewState} ; 
 
 %%%%%%%%%%%%%
@@ -133,5 +133,5 @@ request(_Server, Msg) ->
     genserver:request(_Server, Msg).
 
 initial_state(Nick, GUIName) ->
-    register(list_to_atom(Nick), self()),
+    %register(list_to_atom(Nick), self()),
     #cl_st { nick = Nick, gui = GUIName, connected_channels = [] }.

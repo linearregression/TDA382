@@ -18,11 +18,18 @@ loop(St, {disconnect, Pid}) ->
 
 
 loop(St, {join, _Channel, Pid}) ->
-	NewChannels = St#server_st.channels ++ [_Channel],
-	NewState = St#server_st{channels=NewChannels},
-	newChannel(_Channel),
-	genserver:request(list_to_atom(_Channel), {connect, Pid}),
-	{ok, NewState}.
+	KeyFound = lists:member(_Channel, St#server_st.channels),
+	if	
+		false == KeyFound ->	
+			NewChannels = St#server_st.channels ++ [_Channel],
+			NewState = St#server_st{channels=NewChannels},
+			newChannel(_Channel),
+			genserver:request(list_to_atom(_Channel), {connect, Pid}),
+			{ok, NewState};
+		true ->			
+			genserver:request(list_to_atom(_Channel), {connect, Pid}),
+			{ok, St}	
+	end.
 
 newChannel(_Channel) ->
     %catch(unregister(list_to_atom(_Channel))),

@@ -63,7 +63,7 @@ loop(St,{join,_Channel}) ->
 %%%% Leave
 %%%%%%%%%%%%%%%
 loop(St, {leave, _Channel}) ->
-	KeyFound = lists:keyfind(_Channel, 1, St#cl_st.connected_channels), 	
+	KeyFound = lists:member(_Channel, St#cl_st.connected_channels), 	
 	if
 		false == KeyFound ->
 			{{error, user_not_joined, "Dummy text"}, St};

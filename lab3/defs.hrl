@@ -17,6 +17,6 @@
 % This record defines the structure of the 
 % channel process. 
 % 
--record(channel_st, {clients}).
+-record(channel_st, {clients, name}).
 
 % TODO Use shorter names for the different stuff in here

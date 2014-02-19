@@ -16,17 +16,17 @@ loop(St, {disconnect, Pid}) ->
     % TODO remove connection from chatrooms, if any left
     {ok, NewState};
 
-loop(St, {msg_from_client, Pid, _Msg}) ->
+loop(St, {msg_from_client, Pid, Name, _Msg}) ->
 	lists:foreach(fun(Client) ->
-		send_msg_to_client(Client, _Msg) end,
-		lists:delete(Pid, St#channel_st.clients));
+		send_msg_to_client(St, Client, Name, _Msg) end,
+		lists:delete(Pid, St#channel_st.clients)),
 	{ok, St}.
 
-send_msg_to_client(Pid, _Msg) ->
+send_msg_to_client(St, Pid, Name, _Msg) ->
 	io:fwrite("Message sent: ~w ", [_Msg]),
-	request(Pid, {_Msg}).
+	genserver:request(Pid, {St#channel_st.name, Name, _Msg}).
 
 initial_state(_Channel) ->
-    #channel_st{clients=[]}.
+    #channel_st{clients=[], name=_Channel}.
     
 

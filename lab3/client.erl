@@ -78,14 +78,13 @@ loop(St, {leave, _Channel}) ->
 %%% Sending messages
 %%%%%%%%%%%%%%%%%%%%%
 loop(St, {msg_from_GUI, _Channel, _Msg}) ->
-    IsConnectedToChannel = lists:keyfind(_Channel, 1, St#cl_st.connected_channels),
+    IsConnectedToChannel = lists:member(_Channel, St#cl_st.connected_channels),
     if
 		IsConnectedToChannel == false ->
 			{{error, user_not_joined, "Tried to write to channel not part of."}, St};
         true -> 
             % write message
-			io:fwrite("Message from client: ~w ", [_Msg]),
-			request(list_to_atom(_Channel), {msg_from_client, self(), _Msg}),
+			request(list_to_atom(_Channel), {msg_from_client, self(), St#cl_st.nick, _Msg}),
 			{ok, St}
     end;
 
@@ -112,8 +111,7 @@ loop(St, debug) ->
 %%%% Incoming message
 %%%%%%%%%%%%%%%%%%%%%
 loop(St = #cl_st { gui = GUIName }, _MsgFromClient) ->
-
-    {Channel, Name, Msg} = decompose_msg(_MsgFromClient),
+    {Channel, Name, Msg} = _MsgFromClient,
 	io:fwrite("Message arrived: ~w ", [_MsgFromClient]),
     gen_server:call(list_to_atom(GUIName), {msg_to_GUI, Channel, Name++"> "++Msg}),
     {ok, St}.
@@ -122,8 +120,7 @@ loop(St = #cl_st { gui = GUIName }, _MsgFromClient) ->
 % This function will take a message from the client and
 % decomposed in the parts needed to tell the GUI to display
 % it in the right chat room.
-decompose_msg(_MsgFromClient) ->
-    
+decompose_msg(_MsgFromClient) ->    
     {"", "", ""}.
 
 

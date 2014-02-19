@@ -48,7 +48,14 @@ loop(St,{join,_Channel}) ->
 %%%% Leave
 %%%%%%%%%%%%%%%
 loop(St, {leave, _Channel}) ->
-     {ok, St} ;
+	if
+		false == keyfind(_Channel, 1, St#cl_st.connected_channels) ->
+			{{error, user_not_joined, "Dummy text"}, St};
+        true -> 
+            %leave channel
+			St#cl_st.connected_channels = lists:delete(_Channel, St#cl_st.connected_channels),
+			{ok, St}
+    end;
 
 %%%%%%%%%%%%%%%%%%%%%
 %%% Sending messages

@@ -13,7 +13,6 @@ loop(St, {disconnect, Pid}) ->
     NewClients = lists:delete(Pid, St#channel_st.clients),
     io:fwrite("disconnected to channel: ~w ", [NewClients]),
     NewState = St#channel_st{clients=NewClients},
-    % TODO remove connection from chatrooms, if any left
     {ok, NewState};
 
 loop(St, {msg_from_client, Pid, Name, _Msg}) ->

@@ -54,10 +54,17 @@ loop(St, disconnect) ->
 %%% Join
 %%%%%%%%%%%%%%
 loop(St,{join,_Channel}) ->
-	R = request(list_to_atom(St#cl_st.connected_server), {join, _Channel, self()}),
-	NewChannels = St#cl_st.connected_channels ++ [_Channel],
-    NewState = St#cl_st{connected_channels=NewChannels},
-    {ok, NewState} ;
+		
+	KeyFound = lists:member(_Channel, St#cl_st.connected_channels), 	
+	if
+		false == KeyFound ->
+			R = request(list_to_atom(St#cl_st.connected_server), {join, _Channel, self()}),
+			NewChannels = St#cl_st.connected_channels ++ [_Channel],
+			NewState = St#cl_st{connected_channels=NewChannels},
+			{ok, NewState} ;
+		true ->
+			{{error, user_already_joined, "User have joined the channel already!"}, St}
+	end;
 
 %%%%%%%%%%%%%%%
 %%%% Leave
@@ -71,6 +78,7 @@ loop(St, {leave, _Channel}) ->
             %leave channel
 			NewChannels = lists:delete(_Channel, St#cl_st.connected_channels),
 			NewState = St#cl_st{connected_channels = NewChannels},
+			request(list_to_atom(_Channel),{disconnect, self()}),
 			{ok, NewState}
     end;
 

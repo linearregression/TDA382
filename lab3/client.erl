@@ -34,10 +34,12 @@ loop(St, {connect, _Server}) ->
 loop(St, disconnect) ->
     % TODO Only allow the user to disconnect if he has left all chat rooms
     % if that is not the case, what should we return? exit? error?
+    %[Channels|_] = St#cl_st.connected_channels,
+    io:fwrite("# of channels: ~w ~n", [length(St#cl_st.connected_channels)]),
     if
-        St#cl_st.connected_server /= "-1" -> % tries to disconnect from a server that he is not connected to
+        St#cl_st.connected_server == "-1" -> % tries to disconnect from a server that he is not connected to
             {{error, user_not_connected, "Dummy text"}, St};
-        St#cl_st.connected_channels /= [] -> % has not left all chatrooms
+        length(St#cl_st.connected_channels) /= 0 -> % has not left all chatrooms
             {{error, leave_channels_first, "Dummy text 2"}, St};
         true -> 
             case catch(request(list_to_atom(St#cl_st.connected_server), {disconnect, self()})) of
@@ -136,4 +138,4 @@ request(_Server, Msg) ->
     genserver:request(_Server, Msg).
 
 initial_state(Nick, GUIName) ->
-    #cl_st { nick = Nick, gui = GUIName, connected_channels = [] }.
+    #cl_st { nick = Nick, connected_server = "-1", gui = GUIName, connected_channels = [] }.

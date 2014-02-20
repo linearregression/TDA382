@@ -37,8 +37,8 @@ loop(St, disconnect) ->
     if
         St#cl_st.connected_server /= "-1" -> % tries to disconnect from a server that he is not connected to
             {{error, user_not_connected, "Dummy text"}, St};
-      %  len(St#cl_st.connected_channels) /= 0 -> % has not left all chatrooms
-       %     {{error, leave_channels_first, "Dummy text 2"}, St};
+        St#cl_st.connected_channels /= [] -> % has not left all chatrooms
+            {{error, leave_channels_first, "Dummy text 2"}, St};
         true -> 
             case catch(request(list_to_atom(St#cl_st.connected_server), {disconnect, self()})) of
                 {'EXIT', Reason} -> % if the server process cannot be reached

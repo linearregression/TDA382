@@ -1,4 +1,4 @@
-all: gui client server cchat
+all: gui client server cchat channel
 
 cchat:  cchat.erl server.beam gui.beam
 	erl -compile cchat.erl

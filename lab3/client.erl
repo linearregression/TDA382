@@ -34,8 +34,6 @@ loop(St, {connect, _Server}) ->
 loop(St, disconnect) ->
     % TODO Only allow the user to disconnect if he has left all chat rooms
     % if that is not the case, what should we return? exit? error?
-    %[Channels|_] = St#cl_st.connected_channels,
-    io:fwrite("# of channels: ~w ~n", [length(St#cl_st.connected_channels)]),
     if
         St#cl_st.connected_server == "-1" -> % tries to disconnect from a server that he is not connected to
             {{error, user_not_connected, "Dummy text"}, St};

@@ -12,7 +12,7 @@
 % This record defines the structure of the 
 % server process. 
 % 
--record(server_st, {clients, channels}).
+-record(server_st, {clients, channels, nicknames}).
 
 % This record defines the structure of the 
 % channel process. 

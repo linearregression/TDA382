@@ -11,10 +11,12 @@ loop(St, {connect, _Server}) ->
         St#cl_st.connected_server == _Server -> % tries to disconnect from a server that he is not connected to
             {{error, user_already_connected, "Already connected, duh"}, St};
         true -> 
-            case catch(request(list_to_atom(_Server), {connect, self()})) of
+            case catch(request(list_to_atom(_Server), {connect, self(), St#cl_st.nick})) of
+                {'EXIT', {error, nick_taken, Msg}} ->
+                    {{error, user_already_connected, Msg}, St};
                 {'EXIT', Reason} -> % if the server process cannot be reached
                     {{error, server_not_reached, Reason}, St};
-                Result -> 
+                _Result -> 
                     NewState = St#cl_st{connected_server=_Server}, 
                     {ok, NewState}
             end
@@ -40,10 +42,10 @@ loop(St, disconnect) ->
         length(St#cl_st.connected_channels) /= 0 -> % has not left all chatrooms
             {{error, leave_channels_first, "Dummy text 2"}, St};
         true -> 
-            case catch(request(list_to_atom(St#cl_st.connected_server), {disconnect, self()})) of
+            case catch(request(list_to_atom(St#cl_st.connected_server), {disconnect, self(), St#cl_st.nick})) of
                 {'EXIT', Reason} -> % if the server process cannot be reached
                     {{error, server_not_reached, Reason}, St};
-                Result -> 
+                _Result -> 
                     NewState = St#cl_st{connected_server=-1}, % TODO what to put here?
                     {ok, NewState}
             end
@@ -58,7 +60,7 @@ loop(St,{join,_Channel}) ->
 	KeyFound = lists:member(_Channel, St#cl_st.connected_channels), 	
 	if
 		false == KeyFound ->
-			R = request(list_to_atom(St#cl_st.connected_server), {join, _Channel, self()}),
+			_R = request(list_to_atom(St#cl_st.connected_server), {join, _Channel, self()}),
 			NewChannels = St#cl_st.connected_channels ++ [_Channel],
 			NewState = St#cl_st{connected_channels=NewChannels},
 			{ok, NewState} ;

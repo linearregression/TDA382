@@ -20,9 +20,10 @@ loop(St, {msg_from_client, Pid, Name, _Msg}) ->
 	{ok, St}.
 
 newProcess(St, Pid, Name, _Msg) ->
-lists:foreach(fun(Client) ->
+	SendToList = lists:delete(Pid, St#channel_st.clients),
+	lists:foreach(fun(Client) ->
 		send_msg_to_client(St, Client, Name, _Msg) end,
-		lists:delete(Pid, St#channel_st.clients)).
+		SendToList).
 
 send_msg_to_client(St, Pid, Name, _Msg) ->
 	genserver:request(Pid, {St#channel_st.name, Name, _Msg}).

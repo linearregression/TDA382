@@ -16,13 +16,15 @@ loop(St, {disconnect, Pid}) ->
     {ok, NewState};
 
 loop(St, {msg_from_client, Pid, Name, _Msg}) ->
-	lists:foreach(fun(Client) ->
-		spawn(fun() -> send_msg_to_client(St, Client, Name, _Msg) end) end,
-		lists:delete(Pid, St#channel_st.clients)),
+	spawn(fun() -> newProcess(St, Pid, Name, _Msg) end),
 	{ok, St}.
 
+newProcess(St, Pid, Name, _Msg) ->
+lists:foreach(fun(Client) ->
+		send_msg_to_client(St, Client, Name, _Msg) end,
+		lists:delete(Pid, St#channel_st.clients)).
+
 send_msg_to_client(St, Pid, Name, _Msg) ->
-	io:fwrite("Message sent: ~w ", [_Msg]),
 	genserver:request(Pid, {St#channel_st.name, Name, _Msg}).
 
 initial_state(_Channel) ->

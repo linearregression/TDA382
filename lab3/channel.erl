@@ -17,7 +17,7 @@ loop(St, {disconnect, Pid}) ->
 
 loop(St, {msg_from_client, Pid, Name, _Msg}) ->
 	lists:foreach(fun(Client) ->
-		send_msg_to_client(St, Client, Name, _Msg) end,
+		spawn(fun() -> send_msg_to_client(St, Client, Name, _Msg) end) end,
 		lists:delete(Pid, St#channel_st.clients)),
 	{ok, St}.
 

@@ -21,12 +21,14 @@ loop(St, {msg_from_client, Pid, Name, _Msg}) ->
 
 newProcess(St, Pid, Name, _Msg) ->
 	SendToList = lists:delete(Pid, St#channel_st.clients),
-	lists:foreach(fun(Client) ->
-		send_msg_to_client(St, Client, Name, _Msg) end,
-		SendToList).
+		send_msg_to_client(SendToList, St#channel_st.name, Name, _Msg).
 
-send_msg_to_client(St, Pid, Name, _Msg) ->
-	genserver:request(Pid, {St#channel_st.name, Name, _Msg}).
+send_msg_to_client([SendTo|ClientList], Channel, Name, _Msg) ->
+	spawn(fun() -> genserver:request(SendTo, {Channel, Name, _Msg})end),
+	send_msg_to_client(ClientList, Channel, Name, _Msg);
+
+send_msg_to_client([], Channel, Name, _Msg) ->
+	donothing.
 
 initial_state(_Channel) ->
     #channel_st{clients=[], name=_Channel}.

@@ -10,7 +10,7 @@ loop(St, {connect, Pid, Nick}) ->
             NewClients = St#server_st.clients ++ [Pid],    
             NewNicknames = St#server_st.nicknames ++ [Nick],
             NewState = St#server_st{clients=NewClients, nicknames=NewNicknames},
-            io:fwrite("connected: ~w ", [NewClients]),
+            %io:fwrite("connected: ~w ", [NewClients]),
             {ok, NewState};
         true -> 
             {'EXIT', {error, nick_taken, "Nick already taken on server"}}
@@ -20,7 +20,7 @@ loop(St, {connect, Pid, Nick}) ->
 loop(St, {disconnect, Pid, Nick}) ->
     NewClients = lists:delete(Pid, St#server_st.clients),
     NewNicknames = lists:delete(Nick, St#server_st.nicknames),
-    io:fwrite("disconnected: ~w ", [NewClients]),
+    %io:fwrite("disconnected: ~w ", [NewClients]),
     NewState = St#server_st{clients=NewClients, nicknames=NewNicknames},
     % TODO remove connection from chatrooms, if any left
     {ok, NewState};

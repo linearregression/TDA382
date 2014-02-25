@@ -5,13 +5,13 @@
 
 loop(St, {connect, Pid}) ->
     NewClients = St#channel_st.clients ++ [Pid],
-    io:fwrite("connected to channel: ~w ", [NewClients]),
+    %io:fwrite("connected to channel: ~w ", [NewClients]),
     NewState = St#channel_st{clients=NewClients},
     {ok, NewState};
     
 loop(St, {disconnect, Pid}) ->
     NewClients = lists:delete(Pid, St#channel_st.clients),
-    io:fwrite("disconnected to channel: ~w ", [NewClients]),
+    %io:fwrite("disconnected to channel: ~w ", [NewClients]),
     NewState = St#channel_st{clients=NewClients},
     {ok, NewState};
 

@@ -122,7 +122,7 @@ loop(St, debug) ->
 %%%%%%%%%%%%%%%%%%%%%
 loop(St = #cl_st { gui = GUIName }, _MsgFromClient) ->
     {Channel, Name, Msg} = _MsgFromClient,
-	io:fwrite("Message arrived: ~w ", [_MsgFromClient]),
+	%io:fwrite("Message arrived: ~w ", [_MsgFromClient]),
     gen_server:call(list_to_atom(GUIName), {msg_to_GUI, Channel, Name++"> "++Msg}),
     {ok, St}.
 

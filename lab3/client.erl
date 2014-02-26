@@ -8,8 +8,8 @@
 %%%%%%%%%%%%%%%
 loop(St, {connect, _Server}) ->
     if
-        St#cl_st.connected_server == _Server -> % tries to disconnect from a server that he is not connected to
-            {{error, user_already_connected, "Already connected, duh"}, St};
+        St#cl_st.connected_server == _Server -> 
+            {{error, user_already_connected, "User is already connected to the server."}, St};
         true -> 
             case catch(request(list_to_atom(_Server), {connect, self(), St#cl_st.nick})) of
                 {'EXIT', {error, nick_taken, Msg}} ->
@@ -22,31 +22,21 @@ loop(St, {connect, _Server}) ->
             end
     end;
 
-%    Variable Atom gets the follows values. Atom 
-%    user_already_connected is used when the user tried to 
-%    connect but it is already connected to the server. 
-%    Atom server_not_reached is returned when the server process 
-%    cannot be reached for any reason.
-
 %%%%%%%%%%%%%%%
 %%%% Disconnect
 %%%%%%%%%%%%%%%
-
-
 loop(St, disconnect) ->
-    % TODO Only allow the user to disconnect if he has left all chat rooms
-    % if that is not the case, what should we return? exit? error?
     if
-        St#cl_st.connected_server == "-1" -> % tries to disconnect from a server that he is not connected to
-            {{error, user_not_connected, "Dummy text"}, St};
-        length(St#cl_st.connected_channels) /= 0 -> % has not left all chatrooms
-            {{error, leave_channels_first, "Dummy text 2"}, St};
+        St#cl_st.connected_server == no_server_connected -> 
+            {{error, user_not_connected, "User is not connected to any server."}, St};
+        length(St#cl_st.connected_channels) /= 0 -> 
+            {{error, leave_channels_first, "User has not left all channels."}, St};
         true -> 
             case catch(request(list_to_atom(St#cl_st.connected_server), {disconnect, self(), St#cl_st.nick})) of
                 {'EXIT', Reason} -> % if the server process cannot be reached
                     {{error, server_not_reached, Reason}, St};
                 _Result -> 
-                    NewState = St#cl_st{connected_server=-1}, % TODO what to put here?
+                    NewState = St#cl_st{connected_server=no_server_connected}, 
                     {ok, NewState}
             end
     end;
@@ -56,30 +46,28 @@ loop(St, disconnect) ->
 %%% Join
 %%%%%%%%%%%%%%
 loop(St,{join,_Channel}) ->
-		
-	KeyFound = lists:member(_Channel, St#cl_st.connected_channels), 	
+	IsConnectedToChannel = lists:member(_Channel, St#cl_st.connected_channels), 	
 	if
-		false == KeyFound ->
-			_R = request(list_to_atom(St#cl_st.connected_server), {join, _Channel, self()}),
-			NewChannels = St#cl_st.connected_channels ++ [_Channel],
-			NewState = St#cl_st{connected_channels=NewChannels},
+		IsConnectedToChannel == false ->
+			request(list_to_atom(St#cl_st.connected_server), {join, _Channel, self()}),
+			NewChannelList = St#cl_st.connected_channels ++ [_Channel],
+			NewState = St#cl_st{connected_channels=NewChannelList},
 			{ok, NewState} ;
 		true ->
-			{{error, user_already_joined, "User have joined the channel already!"}, St}
+			{{error, user_already_joined, "User has joined the channel already."}, St}
 	end;
 
 %%%%%%%%%%%%%%%
 %%%% Leave
 %%%%%%%%%%%%%%%
 loop(St, {leave, _Channel}) ->
-	KeyFound = lists:member(_Channel, St#cl_st.connected_channels), 	
+	IsConnectedToChannel = lists:member(_Channel, St#cl_st.connected_channels), 	
 	if
-		false == KeyFound ->
-			{{error, user_not_joined, "Dummy text"}, St};
+		IsConnectedToChannel == false ->
+			{{error, user_not_joined, "User is not connected to that channel."}, St};
         true -> 
-            %leave channel
-			NewChannels = lists:delete(_Channel, St#cl_st.connected_channels),
-			NewState = St#cl_st{connected_channels = NewChannels},
+			NewChannelList = lists:delete(_Channel, St#cl_st.connected_channels),
+			NewState = St#cl_st{connected_channels = NewChannelList},
 			request(list_to_atom(_Channel),{disconnect, self()}),
 			{ok, NewState}
     end;
@@ -93,7 +81,6 @@ loop(St, {msg_from_GUI, _Channel, _Msg}) ->
 		IsConnectedToChannel == false ->
 			{{error, user_not_joined, "Tried to write to channel not part of."}, St};
         true -> 
-            % write message
 			request(list_to_atom(_Channel), {msg_from_client, self(), St#cl_st.nick, _Msg}),
 			{ok, St}
     end;
@@ -108,7 +95,7 @@ loop(St, whoiam) ->
 %%% Nick
 %%%%%%%%%%
 loop(St,{nick,_Nick}) ->
-    NewState = St#cl_st{nick = _Nick}, % save nick to new state
+    NewState = St#cl_st{nick = _Nick}, 
     {ok, NewState} ; 
 
 %%%%%%%%%%%%%
@@ -122,20 +109,12 @@ loop(St, debug) ->
 %%%%%%%%%%%%%%%%%%%%%
 loop(St = #cl_st { gui = GUIName }, _MsgFromClient) ->
     {Channel, Name, Msg} = _MsgFromClient,
-	%io:fwrite("Message arrived: ~w ", [_MsgFromClient]),
     gen_server:call(list_to_atom(GUIName), {msg_to_GUI, Channel, Name++"> "++Msg}),
     {ok, St}.
-
-
-% This function will take a message from the client and
-% decomposed in the parts needed to tell the GUI to display
-% it in the right chat room.
-decompose_msg(_MsgFromClient) ->    
-    {"", "", ""}.
 
 
 request(_Server, Msg) ->
     genserver:request(_Server, Msg).
 
 initial_state(Nick, GUIName) ->
-    #cl_st { nick = Nick, connected_server = "-1", gui = GUIName, connected_channels = [] }.
+    #cl_st { nick = Nick, connected_server = no_server_connected, gui = GUIName, connected_channels = [] }.

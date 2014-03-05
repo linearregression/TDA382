@@ -92,7 +92,7 @@ loop(St, {msg_from_GUI, _Channel, _Msg}) ->
 			{{error, user_not_joined, "Tried to write to channel not part of."}, St};
         true -> 
 			ChannelNode = {list_to_atom(_Channel), list_to_atom(St#cl_st.connected_machine)},
-			request(ChannelNode, {msg_from_client, self(), St#cl_st.nick, node(), _Msg}),
+			request(ChannelNode, {msg_from_client, self(), St#cl_st.nick, _Msg}),
 			{ok, St}
     end;
 
@@ -100,7 +100,7 @@ loop(St, {msg_from_GUI, _Channel, _Msg}) ->
 %%% WhoIam
 %%%%%%%%%%%%%%
 loop(St, whoiam) ->
-    {St#cl_st.nick, St} ;
+    {St#cl_st.nick, St};
 
 %%%%%%%%%%
 %%% Nick

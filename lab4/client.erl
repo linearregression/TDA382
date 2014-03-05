@@ -46,7 +46,7 @@ loop(St, disconnect) ->
                 {'EXIT', Reason} -> % if the server process cannot be reached
                     {{error, server_not_reached, Reason}, St};
                 _Result -> 
-                    NewState = St#cl_st{connected_server=no_server_connected, connected_machine = no_machine_connected}, 
+                    NewState = St#cl_st{connected_server=no_server_connected}, 
                     {ok, NewState}
             end
     end;
@@ -142,4 +142,4 @@ request(_Server, Msg) ->
     genserver:request(_Server, Msg).
 
 initial_state(Nick, GUIName) ->
-    #cl_st { nick = Nick, connected_server = no_server_connected, gui = GUIName, connected_channels = [], connected_machine = no_machine_connected, machine = "node@127.0.0.1"}.
+    #cl_st { nick = Nick, connected_server = no_server_connected, gui = GUIName, connected_channels = []}.

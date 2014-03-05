@@ -10,7 +10,7 @@
 % connected_channels: the name (or PID) of the channels
 % the client is connected to
 %
--record(cl_st, {nick, gui, connected_server, connected_channels, connected_machine, machine}).
+-record(cl_st, {nick, gui, connected_server, connected_channels}).
     
 % This record defines the structure of the 
 % server process. 

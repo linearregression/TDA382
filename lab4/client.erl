@@ -4,30 +4,33 @@
 -include_lib("./defs.hrl").
 
 
-%%%%%%%%%%%%%%%
-%%%% Connect
-%%%%%%%%%%%%%%%
-loop(St, {connect, {_Server, Machine}}) ->
-    if
+connect(St, _Server) ->
+	if
         St#cl_st.connected_server == _Server -> 
             {{error, user_already_connected, "User is already connected to the server."}, St};
         true -> 
-            case catch(request({list_to_atom(_Server), list_to_atom(Machine)}, {connect, self(), St#cl_st.nick})) of
+            case catch(request(serverSendTo(_Server), {connect, self(), St#cl_st.nick})) of
                 {'EXIT', {error, nick_taken, Msg}} ->
                     {{error, user_already_connected, Msg}, St};
                 {'EXIT', Reason} -> % if the server process cannot be reached
                     {{error, server_not_reached, Reason}, St};
                 _Result -> 
-                    NewState = St#cl_st{connected_server=_Server, connected_machine = Machine}, 
+                    NewState = St#cl_st{connected_server=_Server}, 
                     {ok, NewState}
             end
-    end;
+    end.
+
+%%%%%%%%%%%%%%%
+%%%% Connect
+%%%%%%%%%%%%%%%
+loop(St, {connect, {_Server, Machine}}) ->         
+	connect(St, {_Server,Machine});
 	
 %%%%%%%%%%%%%%%
 %%%% Connect
 %%%%%%%%%%%%%%%
-loop(St, {connect, _Server}) ->
-    loop(St, {connect, {_Server, node()}});
+loop(St, {connect, _Server}) ->   
+	connect(St,_Server);
 
 %%%%%%%%%%%%%%%
 %%%% Disconnect
@@ -39,8 +42,7 @@ loop(St, disconnect) ->
         length(St#cl_st.connected_channels) /= 0 -> 
             {{error, leave_channels_first, "User has not left all channels."}, St};
         true -> 
-			ServerNode = {list_to_atom(St#cl_st.connected_server), list_to_atom(St#cl_st.connected_machine)},
-            case catch(request(ServerNode, {disconnect, self(), St#cl_st.nick})) of
+            case catch(request(serverSendTo(St#cl_st.connected_server), {disconnect, self(), St#cl_st.nick})) of
                 {'EXIT', Reason} -> % if the server process cannot be reached
                     {{error, server_not_reached, Reason}, St};
                 _Result -> 
@@ -57,8 +59,7 @@ loop(St,{join,_Channel}) ->
 	IsConnectedToChannel = lists:member(_Channel, St#cl_st.connected_channels), 	
 	if
 		IsConnectedToChannel == false ->
-			ServerNode = {list_to_atom(St#cl_st.connected_server), list_to_atom(St#cl_st.connected_machine)},
-			request(ServerNode, {join, _Channel, self()}),
+			request(serverSendTo(St#cl_st.connected_server), {join, _Channel, self()}),
 			NewChannelList = St#cl_st.connected_channels ++ [_Channel],
 			NewState = St#cl_st{connected_channels=NewChannelList},
 			{ok, NewState} ;
@@ -77,8 +78,7 @@ loop(St, {leave, _Channel}) ->
         true -> 
 			NewChannelList = lists:delete(_Channel, St#cl_st.connected_channels),
 			NewState = St#cl_st{connected_channels = NewChannelList},
-			ChannelNode = {list_to_atom(_Channel), list_to_atom(St#cl_st.connected_machine)},
-			request(ChannelNode,{disconnect, self()}),
+			request(channelSendTo(St#cl_st.connected_server, _Channel),{disconnect, self()}),
 			{ok, NewState}
     end;
 
@@ -91,8 +91,7 @@ loop(St, {msg_from_GUI, _Channel, _Msg}) ->
 		IsConnectedToChannel == false ->
 			{{error, user_not_joined, "Tried to write to channel not part of."}, St};
         true -> 
-			ChannelNode = {list_to_atom(_Channel), list_to_atom(St#cl_st.connected_machine)},
-			request(ChannelNode, {msg_from_client, self(), St#cl_st.nick, _Msg}),
+			request(channelSendTo(St#cl_st.connected_server, _Channel), {msg_from_client, self(), St#cl_st.nick, _Msg}),
 			{ok, St}
     end;
 
@@ -123,6 +122,21 @@ loop(St = #cl_st { gui = GUIName }, _MsgFromClient) ->
     gen_server:call(list_to_atom(GUIName), {msg_to_GUI, Channel, Name++"> "++Msg}),
     {ok, St}.
 
+
+
+serverSendTo({Server, Machine}) ->
+	{list_to_atom(Server),list_to_atom(Machine)};
+
+serverSendTo(Server) ->
+	list_to_atom(Server).
+
+channelSendTo({_Server, Machine}, Channel) ->
+	{list_to_atom(Channel), list_to_atom(Machine)};
+
+channelSendTo(_Server, Channel) ->
+	list_to_atom(Channel).
+
+	
 
 request(_Server, Msg) ->
     genserver:request(_Server, Msg).

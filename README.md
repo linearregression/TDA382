@@ -24,3 +24,9 @@ A course in parallell programming at Chalmers University of Technology, Gothenbu
 ------
 
 > CCHAT is a simple text-based messaging system and is inspired by IRC, an old but still valid standard designed for group discussions. For simplicity, and reasons of time, the implementation of CCHAT is not going to use IRC's protocol nor low-level TCP/IP communication. Instead, it will leverage Erlang's processes and message passing features.
+
+
+[Lab 4 - DCHAT](http://www.cse.chalmers.se/edu/year/2014/course/TDA382/dchat.html) [*Erlang*]
+------
+
+> This lab is basically an adaptation of CCHAT (Lab 3) for a distributed environment. 
